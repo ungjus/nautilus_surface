@@ -17,7 +17,9 @@
     "react-grid-layout": "^1.2.5",
     "react-scripts": "^4.0.1",
     "react-select": "^4.3.0",
-    "socket.io-client": "^3.1.0"
+    "react-webcam": "^6.0.0",
+    "socket.io-client": "^3.1.0",
+    "webcam-easy": "^1.0.5"
   },
   "scripts": {
     "start": "react-scripts start",
