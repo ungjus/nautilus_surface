@@ -1,6 +1,21 @@
 import React from "react";
 import Webcam from "react-webcam";
 // https://www.npmjs.com/package/react-webcam
+
+// What I am thinking of doing is primarily using the 
+// webcam to capture screenshots and then send each
+// screenshot to the interface pretty much continuously. 
+// Maybe the screenshots could happen at a certain rate 
+// i.e. 30fps and then the publisher/subscriber can 
+// also accommodate that (I think with spin()?). 
+// I don't really understand how to use these consts
+// to actually get the image. I know there is a 
+// getScreenshot() method that I used in the class 
+// constructor, but I don't know exactly how to transfer
+// that data or update the website. 
+// I'm not sure how I should write my render method
+// to account for this. 
+
 const WebcamComponent = () => <Webcam />;
 
 const videoConstraints = {
