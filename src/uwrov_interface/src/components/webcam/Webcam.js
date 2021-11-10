@@ -53,8 +53,8 @@ export default class Webcam extends React.Component {
 
   render() { //things it'll display 
     return (
-      <div className="text-box">
-        <p className="text">{this.state.text}</p>
+      <div className="camera-box">
+        <p className="camera">{this.state.frame}</p>
       </div>
     );
   }
