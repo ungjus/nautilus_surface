@@ -2,6 +2,7 @@ import React from "react";
 import MessageForm from './MessageForm'
 import MessageList from './MessageList'
 
+// git test
 export default class Text extends React.Component {
   constructor(props) {
     super(props);
