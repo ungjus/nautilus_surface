@@ -38,5 +38,5 @@ export const NavbarItems = [
 		dropdown: false,
 		defaultWidget: '',
 		cName: 'navButton'
-	}
+	},
 ]

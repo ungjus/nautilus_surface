@@ -7,15 +7,15 @@ import './Message.css'
 
 class Message extends Component {
   static propTypes = {
-    author: PropTypes.string,
+    author: PropTypes.string.isRequired,
     body: PropTypes.string.isRequired,
-    me: PropTypes.bool,
+    //me: PropTypes.bool,
   }
 
   render() {
     const classes = classNames('Message', {
-      log: !this.props.author,
-      me: this.props.me
+      log: this.props.author == 'Server_Log',
+      me: this.props.author == "Amal" //---- figure out how to find local name to compare to author
     })
 
     return (

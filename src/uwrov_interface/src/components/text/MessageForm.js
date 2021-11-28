@@ -13,8 +13,10 @@ class MessageForm extends Component {
 
   handleFormSubmit = (event) => {
     event.preventDefault()
-    this.props.onMessageSend(this.input.value)
-    this.input.value = ""
+    if (this.input.value != "") {
+      this.props.onMessageSend("Amal", this.input.value) // how to get my name?
+      this.input.value = ""
+    }
   }
 
   render() {

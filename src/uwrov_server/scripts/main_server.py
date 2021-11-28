@@ -7,8 +7,10 @@ from flask_socketio import SocketIO, send, emit
 
 from publishers.channel_pub import ChannelPub
 from publishers.move_pub import MovePub
+from publishers.vid_pub import VidPub
 
 from subscribers.image_sub import ImageSub
+from subscribers.vid_sub import VidSub
 
 HOST_IP = "0.0.0.0"
 HOST_PORT = 4040
@@ -38,13 +40,18 @@ image_handles = ['camera_stream', 'img_sub']
 # aux storage to make sure subscriber objects aren't garbage collected
 subscribers = {
     'camera_h': SubInfo('/nautilus/cameras/stream', 'Image Display', 'camera_stream', None),
-    'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None)
+    'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None),
+
+    # TODO: What should be added for SIO route? 
+    'vidsub_h': SubInfo('/nautilus/video_chat', 'Webcam Display', 'vid_sub', None)
 }
 
 # Map of handles to rospy pub objects
 publishers = {
     'move_h': PubInfo('/nautilus/motors/commands', None),
-    'channel_h': PubInfo('/nautilus/cameras/switch', None)
+    'channel_h': PubInfo('/nautilus/cameras/switch', None),
+
+    'vidpub_h': PubInfo('/nautilus/video_chat', None),
 }
 
 
@@ -62,6 +69,15 @@ def set_image_camera(cam_num):
 def send_move_state(data):
     publishers['move_h'].pub.update_state(data)
 
+# ------ NEW VID SIO ------
+@sio.on("send frame")
+def publish_webcam_frame(imgdata):
+    publishers['vidpub_h'].pub.publish(imgdata)
+
+# TODO: What to put in publish parameter?
+@sio.on("Request frames")
+def send_webcam_frames():
+    publishers['vidpub_h'].pub.publish()
 
 def shutdown_server(signum, frame):
     rospy.loginfo("Shutting down main server")
@@ -80,9 +96,14 @@ if __name__ == '__main__':
         subinfo = subscribers[handle]
         subinfo.sub = ImageSub(
             subinfo.ros_topic, subinfo.sio_route, subinfo.sio_id, sio)
+    
+    subscribers['vidsub_h'].sub = VidSub(subscribers['vidsub_h'].ros_topic, subscribers['vidsub_h'].sio_route, 
+                                  subscribers['vidsub_h'].sio_id, sio)
 
     publishers['channel_h'].pub = ChannelPub(publishers['channel_h'].ros_topic)
     publishers['move_h'].pub = MovePub(publishers['move_h'].ros_topic)
+
+    publishers['vidpub_h'].pub = VidPub(publishers['vidpub_h'].ros_topic)
 
     # Define a way to exit gracefully
     signal.signal(signal.SIGINT, shutdown_server)
