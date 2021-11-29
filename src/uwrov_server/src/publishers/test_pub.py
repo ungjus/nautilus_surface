@@ -16,6 +16,7 @@ class ChannelPub(ServerPub):
     def add_msg(self, data):
         author = data["author"]
         text = data["body"]
+
         new_list = list(self.cached_object.cache).append(data)
 
         self.publish(self, new_list)
@@ -25,6 +26,7 @@ class ChannelPub(ServerPub):
 
     def publish(self, data):
         new_video = dict(self.cached_object.cache)
+        new_video[author] = frame
         # TODO Text
         #   push new message onto previous datasets and then publish
         # TODO VIDEO
