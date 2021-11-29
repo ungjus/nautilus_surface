@@ -9,10 +9,12 @@ from publishers.channel_pub import ChannelPub
 from publishers.move_pub import MovePub
 
 from subscribers.image_sub import ImageSub
+from subscribers.text_sub import TextSub
 
 HOST_IP = "0.0.0.0"
 HOST_PORT = 4040
 
+#main_server.py: setting up subscribers/publishers and SIO endpts
 
 class SubInfo:
     def __init__(self, ros_topic, sio_route, sio_id, sub):
@@ -38,13 +40,15 @@ image_handles = ['camera_stream', 'img_sub']
 # aux storage to make sure subscriber objects aren't garbage collected
 subscribers = {
     'camera_h': SubInfo('/nautilus/cameras/stream', 'Image Display', 'camera_stream', None),
-    'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None)
+    'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None),
+    'text_sub': SubInfo('/nautilus/text_chat', 'Text Chat', None, None)
 }
 
 # Map of handles to rospy pub objects
 publishers = {
     'move_h': PubInfo('/nautilus/motors/commands', None),
     'channel_h': PubInfo('/nautilus/cameras/switch', None)
+    'text_h': PubInfo('/nautilus/text_chat', None)
 }
 
 
@@ -62,6 +66,20 @@ def set_image_camera(cam_num):
 def send_move_state(data):
     publishers['move_h'].pub.update_state(data)
 
+@sio.on("Post Msg")
+def post_msg(msg):
+    #will access pub to update list of msgs and publish update to rostopic
+    publishers['text_chat'].pub.add_msg(msg)
+
+@sio.on("Get all Msgs")
+def send_all_msgs():
+    #previously "get_all_msgs"
+    
+    #takes all msgs in pub and sends to client (this is defined in MsgPub)
+    publishers['text_chat'].pub.publish(data)
+
+def request_msgs():
+    #used to handle the "request msgs" event and call send_all_msgs method
 
 def shutdown_server(signum, frame):
     rospy.loginfo("Shutting down main server")
@@ -75,14 +93,22 @@ if __name__ == '__main__':
 
     rospy.init_node('surface', log_level=rospy.DEBUG)
 
+    subscribers['text_sub'].sub = TextSub(subscribers['text_sub'].ros_topic,
+                                          subscribers['text_sub'].sio_route, 
+                                          sio)
+
     # Register our subscribers and publishers
     for handle in ['camera_h', 'img_h']:
         subinfo = subscribers[handle]
         subinfo.sub = ImageSub(
             subinfo.ros_topic, subinfo.sio_route, subinfo.sio_id, sio)
 
+   
+
     publishers['channel_h'].pub = ChannelPub(publishers['channel_h'].ros_topic)
     publishers['move_h'].pub = MovePub(publishers['move_h'].ros_topic)
+    publishers['text_h'].pub = MsgPub(publishers['text_h'].ros_topic, 
+                                      subscribers['text_sub'].sub)
 
     # Define a way to exit gracefully
     signal.signal(signal.SIGINT, shutdown_server)
