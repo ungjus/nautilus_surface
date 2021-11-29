@@ -1,31 +1,38 @@
-#!/usr/bin/env python3
 import rospy
-import threading
 from .publisher import ServerPub
-from std_msgs.msg import Int16
+from std_msgs.msg import String
+import json
 
 
-class VidPub(ServerPub):
+class ChannelPub(ServerPub):
     """
-    Publisher for movement commands, dictated by current state of the xbox controller
+    Publisher for switching the viewed camera channel
     """
 
-    def __init__(self, topic):
-        super().__init__(topic)
-        self.msg = Int16()
-        # self.launch_continuous_publisher()
+    def __init__(self, topic, cache):
+        super().__init__(topic, String)
+        self.cached_object = cache
+
+    def publish(self, data):
+        # get author and image
+        author = data['author']
+        image = data['frame']
+
+        # add author and image to previous cache
+        new_video = dict(self.cached_object.cache) 
+        new_video[author] = image
+        
+        # stringify updated cache and publish
+        stringified = json.dumps(new_video)
+        new_video(stringified)
     
-    def publish(self, newImage):
-        self.msg = newImage
-        self.publisher.publish(self.msg)
+    def disconnect(self, author):
+        new_video = dict(self.cached_object.cache) 
 
-    # def publish_continuous(self, rate: int):
-    #     r = rospy.Rate(rate)
-    #     while not rospy.is_shutdown():
-    #         self.publish()
-    #         r.sleep()
 
-    # def launch_continuous_publisher(self):
-    #     self.publisher_thread = threading.Thread(
-    #         target=self.publish_continuous, args=(20,), daemon=True)
-    #     self.publisher_thread.start()
+        # remove person when they disconnect
+        new_video.pop(author)
+
+        # stringify updated cache and publish
+        stringified = json.dumps(new_video)
+        new_video(stringified)

@@ -43,7 +43,7 @@ subscribers = {
     'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None),
 
     # TODO: What should be added for SIO route? 
-    'vidsub_h': SubInfo('/nautilus/video_chat', 'Webcam Display', 'vid_sub', None)
+    'vidsub_h': SubInfo('/nautilus/video_chat', 'Webcam Display', None, None)
 }
 
 # Map of handles to rospy pub objects
@@ -71,8 +71,8 @@ def send_move_state(data):
 
 # ------ NEW VID SIO ------
 @sio.on("send frame")
-def publish_webcam_frame(imgdata):
-    publishers['vidpub_h'].pub.publish(imgdata)
+def publish_webcam_frame(data):
+    publishers['vidpub_h'].pub.publish(data)
 
 # TODO: What to put in publish parameter?
 @sio.on("Request frames")
@@ -97,13 +97,12 @@ if __name__ == '__main__':
         subinfo.sub = ImageSub(
             subinfo.ros_topic, subinfo.sio_route, subinfo.sio_id, sio)
     
-    subscribers['vidsub_h'].sub = VidSub(subscribers['vidsub_h'].ros_topic, subscribers['vidsub_h'].sio_route, 
-                                  subscribers['vidsub_h'].sio_id, sio)
+    subscribers['vidsub_h'].sub = VidSub(subscribers['vidsub_h'].ros_topic, subscribers['vidsub_h'].sio_route, sio)
 
     publishers['channel_h'].pub = ChannelPub(publishers['channel_h'].ros_topic)
     publishers['move_h'].pub = MovePub(publishers['move_h'].ros_topic)
 
-    publishers['vidpub_h'].pub = VidPub(publishers['vidpub_h'].ros_topic)
+    publishers['vidpub_h'].pub = VidPub(publishers['vidpub_h'].ros_topic, subscribers['vidsub_h'].sub)
 
     # Define a way to exit gracefully
     signal.signal(signal.SIGINT, shutdown_server)
