@@ -38,13 +38,18 @@ image_handles = ['camera_stream', 'img_sub']
 # aux storage to make sure subscriber objects aren't garbage collected
 subscribers = {
     'camera_h': SubInfo('/nautilus/cameras/stream', 'Image Display', 'camera_stream', None),
-    'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None)
+    'img_h': SubInfo('/image/distribute', 'Image Display', 'img_sub', None),
+
+
+    'text_sub': SubInfo('/nautilus/text_chat', 'Text Chat', None, None)
 }
 
 # Map of handles to rospy pub objects
 publishers = {
     'move_h': PubInfo('/nautilus/motors/commands', None),
-    'channel_h': PubInfo('/nautilus/cameras/switch', None)
+    'channel_h': PubInfo('/nautilus/cameras/switch', None),
+
+    'text_h': PubInfo('/nautilus/text_chat', None)
 }
 
 
@@ -62,6 +67,10 @@ def set_image_camera(cam_num):
 def send_move_state(data):
     publishers['move_h'].pub.update_state(data)
 
+@sio.on("Post Event")
+def post_message(data):
+    publishers["text_h"].pub.publish(data)
+
 
 def shutdown_server(signum, frame):
     rospy.loginfo("Shutting down main server")
@@ -75,6 +84,11 @@ if __name__ == '__main__':
 
     rospy.init_node('surface', log_level=rospy.DEBUG)
 
+
+    subscribers['text_sub'].sub = TestSub(subscribers['text_sub'].ros_topic,
+                                            subscribers['text_sub'].sio_route,
+                                            sio)
+
     # Register our subscribers and publishers
     for handle in ['camera_h', 'img_h']:
         subinfo = subscribers[handle]
@@ -83,6 +97,9 @@ if __name__ == '__main__':
 
     publishers['channel_h'].pub = ChannelPub(publishers['channel_h'].ros_topic)
     publishers['move_h'].pub = MovePub(publishers['move_h'].ros_topic)
+
+    publishers['text_h'].pub = TestPub(publishers['text_h'].ros_topic,
+                                        subscribers['text_sub'].sub)
 
     # Define a way to exit gracefully
     signal.signal(signal.SIGINT, shutdown_server)
