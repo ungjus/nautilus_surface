@@ -1,22 +1,22 @@
 // ./src/MessageList.js
 
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import Message from './Message'
-import './MessageList.css'
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import Message from "./Message";
+import "./MessageList.css";
 
 class MessageList extends Component {
   static propTypes = {
-    messages: PropTypes.arrayOf(PropTypes.object)
-  }
+    messages: PropTypes.arrayOf(PropTypes.object),
+  };
 
   static defaultProps = {
     messages: [],
-  }
+  };
 
   componentDidUpdate = () => {
-    this.node.scrollTop = this.node.scrollHeight
-  }
+    this.node.scrollTop = this.node.scrollHeight;
+  };
 
   render() {
     return (
@@ -25,8 +25,8 @@ class MessageList extends Component {
           <Message key={i} {...message} />
         ))}
       </div>
-    )
+    );
   }
 }
 
-export default MessageList
+export default MessageList;
